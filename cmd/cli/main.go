@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	var rootCommand = &cobra.Command{}
-
 	var (
 		serviceName      string
 		containerName    string
@@ -56,6 +54,5 @@ func main() {
 	cmd.Flags().StringVarP(&volume, "volume", "m", "", "Volume container")
 	cmd.Flags().BoolVarP(&debug, "debug", "d", false, "Enable debug mode")
 
-	rootCommand.AddCommand(cmd)
-	rootCommand.Execute()
+	cmd.Execute()
 }
