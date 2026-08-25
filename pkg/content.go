@@ -34,8 +34,7 @@ services:
         ports:
             - "{{.DataBasePort}}"
         volumes:
-            - {{.Volume}}:/var/lib/postgresql/data
-
+            - {{.Volume}}:/var/lib/postgresql
 volumes:
     {{.Volume}}:`
 
