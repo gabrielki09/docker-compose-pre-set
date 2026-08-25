@@ -15,11 +15,12 @@ func CreateFile(dockerFile DockerFile) error {
 		return err
 	}
 
-	log.Debugf("Current Path: %s", currentPath)
-
 	fullPath := filepath.Join(currentPath, FILE_NAME)
 
-	log.Debugf("Full path: %s", fullPath)
+	content, err := CreateContent(dockerFile)
+	if err != nil {
+		return err
+	}
 
 	osFile, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
@@ -28,15 +29,10 @@ func CreateFile(dockerFile DockerFile) error {
 			return err
 		}
 
-		return nil
+		return err
 	}
 
 	defer osFile.Close()
-
-	content, err := CreateContent(dockerFile)
-	if err != nil {
-		return err
-	}
 
 	if _, err := osFile.WriteString(content); err != nil {
 		log.Errorf("Erro ao escrever no arquivo: %s", err)

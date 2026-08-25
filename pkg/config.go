@@ -3,12 +3,12 @@ package pkg
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
-	"github.com/gabrielki09/docker-compose-pre-set/helpers"
+	"charm.land/log/v2"
 )
 
 type DockerFile struct {
+	ServiceName      string
 	ContainerName    string
 	DataBaseDB       string
 	DataBaseUser     string
@@ -18,133 +18,142 @@ type DockerFile struct {
 }
 
 func validateData(
-	aplicationName,
+	serviceName,
 	containerName,
 	dataBaseName,
 	dataBaseUser,
 	dataBasePassword,
-	dataBaseport string,
-	fullInformed bool,
-) map[string]string {
-	validation := make(map[string]string)
+	dataBasePort,
+	volume string,
+) error {
+	if serviceName == "" {
+		log.Infof("O nome do serviço não foi definido, nome padrão definido como: %s", DEFAULT_SERVICE_NAME)
+		serviceName = DEFAULT_SERVICE_NAME
 
-	dataBasePassword = helpers.GlobalTrimSpace(dataBasePassword)
+	} else if len(serviceName) < MIN_SERVICE_NAME {
+		return ErrMinsServiceName
 
-	if helpers.GlobalTrimSpace(aplicationName) == "" {
-		validation["application_name"] = ErrNoInformedApplicationName.Error()
-		return validation
+	} else if len(serviceName) > MAX_SERVICE_NAME {
+		return ErrMaxsServiceName
+
+	}
+
+	if containerName == "" {
+		return ErrNoInformedContainerName
+
+	} else if len(containerName) < MIN_CONTAINER_NAME {
+		return ErrMinContainerName
+
+	} else if len(containerName) > MAX_CONTAINER_NAME {
+		return ErrMaxContainerName
+
+	}
+
+	if dataBaseName == "" {
+		return ErrNoInformedDatabaseName
+
+	} else if len(dataBaseName) < MIN_DATABASE_NAME {
+		return ErrMinDatabaseName
+
+	} else if len(dataBaseName) > MAX_DATABASE_NAME {
+		return ErrMaxDatabaseName
+
+	}
+
+	if dataBaseUser == "" {
+		return ErrNoInformedDatabaseUser
+	} else if len(dataBaseUser) < MIN_DATABASE_USER {
+		return ErrMinDatabaseUser
+	} else if len(dataBaseUser) > MAX_DATABASE_USER {
+		return ErrMaxDatabaseUser
+	}
+
+	port, err := strconv.Atoi(dataBasePort)
+
+	if err != nil {
+		return ErrInvalidFormatPort
+	} else if port < 1 || port > 65536 {
+		return ErrOutRangePort
+	} else if len(dataBasePort) < MIN_DATABASE_PORT {
+		return ErrMinDatabasePort
+	} else if len(dataBasePort) > MAX_DATABASE_PORT {
+		return ErrMaxDatabasePort
 	}
 
 	if dataBasePassword == "" {
-		validation["postgres_password"] = ErrNoInformedDatabasePassword.Error()
+		return ErrNoInformedDatabasePassword
 	} else if len(dataBasePassword) < MIN_DATABASE_PASSWORD {
-		validation["postgres_password"] = ErrMinDatabasePassword.Error()
+		return ErrMinDatabasePassword
 	} else if len(dataBasePassword) > MAX_DATABASE_PASSWORD {
-		validation["postgres_password"] = ErrMaxDatabasePassword.Error()
+		return ErrMaxDatabasePassword
 	}
 
-	if fullInformed {
-		containerName = helpers.GlobalTrimSpace(containerName)
-		dataBaseName = helpers.GlobalTrimSpace(dataBaseName)
-		dataBaseUser = helpers.GlobalTrimSpace(dataBaseUser)
-		dataBaseport = helpers.GlobalTrimSpace(dataBaseport)
-
-		if containerName == "" {
-			validation["container_name"] = ErrNoInformedContainerName.Error()
-		} else if len(containerName) < MIN_CONTAINER_NAME {
-			validation["container_name"] = ErrMinContainerName.Error()
-		} else if len(containerName) > MAX_CONTAINER_NAME {
-			validation["container_name"] = ErrMaxContainerName.Error()
-		}
-
-		if dataBaseName == "" {
-			validation["postgres_db"] = ErrNoInformedDatabaseName.Error()
-		} else if len(dataBaseName) < MIN_DATABASE_NAME {
-			validation["postgres_db"] = ErrMinDatabaseName.Error()
-		} else if len(dataBaseName) > MAX_DATABASE_NAME {
-			validation["postgres_db"] = ErrMaxDatabaseName.Error()
-		}
-
-		if dataBaseUser == "" {
-			validation["postgres_user"] = ErrNoInformedDatabaseUser.Error()
-		} else if len(dataBaseUser) < MIN_DATABASE_USER {
-			validation["postgres_user"] = ErrMinDatabaseUser.Error()
-		} else if len(dataBaseUser) > MAX_DATABASE_USER {
-			validation["postgres_user"] = ErrMaxDatabaseUser.Error()
-		}
-
-		if dataBaseport == "" {
-			validation["postgres_port"] = ErrNoInformedDatabasePort.Error()
-		} else if len(dataBaseport) < MIN_DATABASE_PORT {
-			validation["postgres_port"] = ErrMinDatabasePort.Error()
-		} else if len(dataBaseport) > MAX_DATABASE_PORT {
-			validation["postgres_port"] = ErrMaxDatabasePort.Error()
-		} else if _, err := strconv.Atoi(dataBaseport); err != nil {
-			validation["postgres_port"] = ErrInvalidFormatPort.Error()
-		}
-
-		return validation
+	if volume == "" {
+		return ErrNoInformedVolume
+	} else if len(volume) < MIN_VOLUME {
+		return ErrMinVolume
+	} else if len(volume) > MAX_VOLUME {
+		return ErrMaxVolume
 	}
 
 	return nil
 }
 
 func buildDockerComposeFile(
-	aplicationName,
+	serviceName,
 	containerName,
 	dataBaseName,
 	dataBaseUser,
 	dataBasePassword,
-	dataBasePort string,
-	fullInformed bool,
+	dataBasePort,
+	volume string,
 ) (DockerFile, error) {
-	containerName = helpers.GlobalTrimSpace(toSnakeCase(containerName))
-	dataBaseName = helpers.GlobalTrimSpace(toSnakeCase(dataBaseName))
-	dataBaseUser = helpers.GlobalTrimSpace(toSnakeCase(dataBaseUser))
-	dataBasePassword = helpers.GlobalTrimSpace(toSnakeCase(dataBasePassword))
-	dataBasePort = helpers.GlobalTrimSpace(toSnakeCase(dataBasePort))
+	serviceName = globalTrimSpace(serviceName)
+	containerName = globalTrimSpace(containerName)
+	dataBaseName = globalTrimSpace(dataBaseName)
+	dataBaseUser = globalTrimSpace(dataBaseUser)
+	dataBasePassword = globalTrimSpace(dataBasePassword)
+	dataBasePort = globalTrimSpace(dataBasePort)
 
-	if fullInformed {
-		return DockerFile{
-			ContainerName:    containerName,
-			DataBaseDB:       dataBaseName,
-			DataBaseUser:     dataBaseUser,
-			DataBasePassword: dataBasePassword,
-			DataBasePort:     buildDatabasePort(dataBasePort),
-			Volume:           buildVolume(containerName),
-		}, nil
+	if err := validateData(
+		serviceName,
+		containerName,
+		dataBaseName,
+		dataBaseUser,
+		dataBasePassword,
+		dataBasePort,
+		volume,
+	); err != nil {
+		return DockerFile{}, err
 	}
 
 	return DockerFile{
-		ContainerName:    buildContainerName(aplicationName),
-		DataBaseDB:       buildDatabaseName(aplicationName),
-		DataBaseUser:     aplicationName,
+		ServiceName:      serviceName,
+		ContainerName:    buildContainerName(containerName),
+		DataBaseDB:       buildDatabaseName(dataBaseName),
+		DataBaseUser:     dataBaseUser,
 		DataBasePassword: dataBasePassword,
 		DataBasePort:     buildDatabasePort(dataBasePort),
-		Volume:           buildVolume(aplicationName),
+		Volume:           buildVolume(volume),
 	}, nil
 }
 
-func toSnakeCase(s string) string {
-	s = helpers.GlobalTrimSpace(s)
-	s = strings.ReplaceAll(s, "-", "_")
-	s = strings.ReplaceAll(s, " ", "_")
-
-	return s
-}
-
 func buildContainerName(s string) string {
-	return fmt.Sprintf("%s_postgres", toSnakeCase(s))
+	return fmt.Sprintf("%s_postgres", s)
 }
 
 func buildDatabaseName(s string) string {
-	return fmt.Sprintf("%s_db", toSnakeCase(s))
+	return fmt.Sprintf("%s_db", s)
 }
 
 func buildDatabasePort(s string) string {
+	if s == "" {
+		s = DEFAULT_DATABASE_PORT
+	}
+
 	return fmt.Sprintf("%s:5432", s)
 }
 
 func buildVolume(s string) string {
-	return fmt.Sprintf("%s_postgres_data:", s)
+	return fmt.Sprintf("%s_postgres_data", s)
 }

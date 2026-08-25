@@ -1,16 +1,17 @@
+
 services:
-    postgres:
+    teste:
         image: postgres:18-alpine
-        container_name: product_importer_postgres
+        container_name: teste_postgres
         restart: always
         environment:
-            POSTGRES_DB: product_importer_db
-            POSTGRES_USER: product_importer
-            POSTGRES_PASSWORD: masterkey
+            POSTGRES_DB: teste_db
+            POSTGRES_USER: teste
+            POSTGRES_PASSWORD: 123456
         ports:
-            - "5430:5432"
+            - "5422:5432"
         volumes:
-            - product_importer_postgres_data:/var/lib/postgresql/data
+            - teste_postgres_data:/var/lib/postgresql/data
 
 volumes:
-    product_importer_postgres_data:
+    teste_postgres_data:

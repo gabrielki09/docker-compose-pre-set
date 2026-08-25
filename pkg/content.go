@@ -23,7 +23,7 @@ func processTemplate(templateForParse string, structForExecute DockerFile) (stri
 func CreateContent(dockerFile DockerFile) (string, error) {
 	const defaultTemplate = `
 services:
-    postgres:
+    {{.ServiceName}}:
         image: postgres:18-alpine
         container_name: {{.ContainerName}}
         restart: always
@@ -37,9 +37,7 @@ services:
             - {{.Volume}}:/var/lib/postgresql/data
 
 volumes:
-    {{.Volume}}:
-
-	`
+    {{.Volume}}:`
 
 	return processTemplate(defaultTemplate, dockerFile)
 }

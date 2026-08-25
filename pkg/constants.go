@@ -6,7 +6,12 @@ import (
 )
 
 const (
-	FILE_NAME = "compose.yaml"
+	FILE_NAME             = "compose.yaml"
+	DEFAULT_DATABASE_PORT = "5432"
+	DEFAULT_SERVICE_NAME  = "postgres"
+
+	MIN_SERVICE_NAME = 3
+	MAX_SERVICE_NAME = 255
 
 	MIN_CONTAINER_NAME = 3
 	MAX_CONTAINER_NAME = 255
@@ -22,9 +27,13 @@ const (
 
 	MIN_DATABASE_PORT = 4
 	MAX_DATABASE_PORT = 16
+
+	MIN_VOLUME = 4
+	MAX_VOLUME = 255
 )
 
-var ErrNoInformedApplicationName = errors.New("O nome da aplicação é obrigatório.")
+var ErrMinsServiceName = fmt.Errorf("o nome do serviço precisa possuir no mínimo %d caracteres.", MIN_CONTAINER_NAME)
+var ErrMaxsServiceName = fmt.Errorf("o nome do serviço precisa possuir no máximo %d caracteres.", MAX_CONTAINER_NAME)
 
 var ErrNoInformedContainerName = errors.New("o nome do container da aplicação é obrigatório.")
 var ErrMinContainerName = fmt.Errorf("o nome do container precisa possuir no mínimo %d caracteres.", MIN_CONTAINER_NAME)
@@ -46,3 +55,8 @@ var ErrNoInformedDatabasePort = errors.New("a porta do banco de dados da aplica�
 var ErrMinDatabasePort = fmt.Errorf("a porta do banco de dados precisa possuir no mínimo %d caracteres.", MIN_DATABASE_PORT)
 var ErrMaxDatabasePort = fmt.Errorf("a porta do banco de dados precisa possuir no máximo %d caracteres.", MAX_DATABASE_PORT)
 var ErrInvalidFormatPort = errors.New("a porta do banco de dados da aplicação precisa ser um número inteiro.")
+var ErrOutRangePort = errors.New("a porta do banco de dados da aplicação precisa estar em um limite válido.")
+
+var ErrNoInformedVolume = errors.New("o volume do banco é obrigatório.")
+var ErrMinVolume = fmt.Errorf("o volume do container precisa possuir no mínimo %d caracteres.", MIN_VOLUME)
+var ErrMaxVolume = fmt.Errorf("o volume do container precisa possuir no máximo %d caracteres.", MAX_VOLUME)
