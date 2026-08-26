@@ -425,95 +425,7 @@ volume final:     minha_api_postgres_data
 
 ---
 
-## Problemas conhecidos
-
-### 1. O comando exige subcomando `docker`
-
-Hoje o uso fica:
-
-```bash
-docker-compose-pre-set docker --name postgres ...
-```
-
-Para uma CLI pessoal, seria mais confortável usar direto:
-
-```bash
-docker-compose-pre-set --name postgres ...
-```
-
-### 2. Senha pode ser convertida para minúsculo
-
-A função `globalTrimSpace` atualmente também chama `strings.ToLower`.
-
-Isso altera a senha.
-
-Exemplo:
-
-```text
-Senha informada: AbC@123
-Senha usada:     abc@123
-```
-
-### 3. O nome do serviço padrão não volta para a geração
-
-A validação define `postgres` como nome padrão quando `--name` vem vazio, mas esse valor é local da validação.
-
-Na prática, ainda pode haver problema na geração caso o nome do serviço não seja informado.
-
-### 4. YAML é gerado via template simples
-
-O compose é montado por string/template.
-
-Funciona para valores simples, mas pode dar problema com caracteres especiais em senha ou nomes.
-
-Exemplo de senha problemática:
-
-```text
-abc:123
-abc#123
-{abc}
-```
-
-### 5. `Execute()` não trata erro
-
-O retorno de:
-
-```go
-rootCommand.Execute()
-```
-
-não está sendo tratado.
-
-O ideal é capturar o erro e encerrar com código diferente de zero.
-
----
-
-## Próximos ajustes sugeridos
-
-### Ajustes mínimos
-
-- [ ] Corrigir `globalTrimSpace` para não alterar senha.
-- [ ] Tratar erro retornado por `Execute()`.
-- [ ] Ajustar nome de serviço padrão antes da validação.
-- [ ] Remover o subcomando `docker`, caso o objetivo seja usar a CLI diretamente.
-- [ ] Rodar `go fmt ./...`.
-- [ ] Rodar `go mod tidy`.
-- [ ] Fazer build local.
-
-### Ajustes futuros
-
-- [ ] Gerar YAML com biblioteca própria em vez de template manual.
-- [ ] Adicionar flag `--output`.
-- [ ] Adicionar flag `--image`.
-- [ ] Permitir criação de `.env`.
-- [ ] Criar testes unitários para validação e geração.
-- [ ] Criar releases por sistema operacional.
-- [ ] Adicionar `.gitignore`.
-- [ ] Remover `.git` de arquivos `.zip` enviados/compartilhados.
-
----
-
-## Build recomendada para uso pessoal
+## ## Build recomendada para uso pessoal
 
 Fluxo simples:
 
@@ -568,11 +480,3 @@ docker compose up -d
 
 Essa CLI é útil para uso pessoal e para acelerar setup local de projetos.
 
-Antes de usar diariamente, os ajustes mais importantes são:
-
-```text
-não alterar senha
-não depender do subcomando docker se não for necessário
-tratar erro do Execute()
-garantir nome de serviço padrão corretamente
-```
