@@ -74,10 +74,6 @@ func validateData(
 		return ErrInvalidFormatPort
 	} else if port < 1 || port > 65536 {
 		return ErrOutRangePort
-	} else if len(dataBasePort) < MIN_DATABASE_PORT {
-		return ErrMinDatabasePort
-	} else if len(dataBasePort) > MAX_DATABASE_PORT {
-		return ErrMaxDatabasePort
 	}
 
 	if dataBasePassword == "" {
